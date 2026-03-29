@@ -1,4 +1,4 @@
-name: Sync Upstream to Gitee
+name: copaw-upstream-to-gitee
 
 on:
   # 每一小时检查一次上游更新
@@ -6,6 +6,9 @@ on:
     - cron: '1 * * * *'
   # 允许手动触发
   workflow_dispatch:
+# 添加权限配置
+permissions:
+  contents: write  # 允许写入仓库内容
 
 jobs:
   sync:
