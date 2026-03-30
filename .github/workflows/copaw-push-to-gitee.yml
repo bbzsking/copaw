@@ -1,0 +1,29 @@
+name: copaw-push-to-gitee
+
+on:
+  schedule:
+    - cron: '1 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout target repo
+        run: |
+          git checkout main
+          git pull
+          
+      - name: Push to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          git config --global user.email "zhangbinbinhi@outlook.com"
+          git config --global user.name "elvesking"
+          git remote add gitee https://oauth2:${GITEE_TOKEN}@gitee.com/elvesking/firmware-agent.git
+          git push -f gitee main:main
+          echo "Pushed to Gitee main branch"
