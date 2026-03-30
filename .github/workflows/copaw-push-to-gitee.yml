@@ -2,28 +2,36 @@ name: copaw-push-to-gitee
 
 on:
   schedule:
-    - cron: '1 * * * *'
-  workflow_dispatch:
+    - cron: '1 * * * *'      # 每小时触发一次（可根据需要调整）
+  workflow_dispatch:          # 允许手动触发
 
 permissions:
   contents: write
 
 jobs:
-  sync:
+  push:
     runs-on: ubuntu-latest
     steps:
-    
-      - name: Checkout target repo
+      - name: Configure Git Identity
         run: |
-          git checkout main
-          git pull
-          
+          git config --global user.email "zhangbinbinhi@outlook.com"
+          git config --global user.name "bbzsking"
+
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}   # 确保 PAT 有读取/写入当前仓库的权限
+
       - name: Push to Gitee
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
-          git config --global user.email "zhangbinbinhi@outlook.com"
-          git config --global user.name "elvesking"
+          # 添加 Gitee 远程仓库（使用 OAuth2 认证）
           git remote add gitee https://oauth2:${GITEE_TOKEN}@gitee.com/elvesking/firmware-agent.git
+          
+          # 推送 main 分支到 Gitee 的 main 分支
+          # 注意：如果 Gitee 仓库已经存在并且你希望保留其历史，请移除 -f 选项
           git push -f gitee main:main
-          echo "Pushed to Gitee main branch"
+          
+          echo "Successfully pushed to Gitee main branch"
