@@ -84,57 +84,45 @@ class ModelManager:
         if memory_gb <= 8:
             models = [
                 LocalModelInfo(
-                    id="AgentScope/CoPaw-flash-2B-Q4_K_M",
-                    name="CoPaw-flash-2B-Q4_K_M",
+                    id="AgentScope/CoPaw-Flash-2B-Q4_K_M",
+                    name="CoPaw-Flash-2B-Q4_K_M",
                     size_bytes=1560460768,
+                    source=DownloadSource.MODELSCOPE,
                 ),
                 LocalModelInfo(
-                    id="AgentScope/CoPaw-flash-2B-Q8_0",
-                    name="CoPaw-flash-2B-Q8_0",
+                    id="AgentScope/CoPaw-Flash-2B-Q8_0",
+                    name="CoPaw-Flash-2B-Q8_0",
                     size_bytes=2552356320,
-                ),
-                LocalModelInfo(
-                    id="Qwen/Qwen3-0.6B-GGUF",
-                    name="Qwen3-0.6B-GGUF",
-                    size_bytes=639446688,
                     source=DownloadSource.MODELSCOPE,
                 ),
             ]
         elif memory_gb <= 16:
             models = [
                 LocalModelInfo(
-                    id="AgentScope/CoPaw-flash-4B-Q4_K_M",
-                    name="CoPaw-flash-4B-Q4_K_M",
+                    id="AgentScope/CoPaw-Flash-4B-Q4_K_M",
+                    name="CoPaw-Flash-4B-Q4_K_M",
                     size_bytes=3066384736,
+                    source=DownloadSource.MODELSCOPE,
                 ),
                 LocalModelInfo(
-                    id="AgentScope/CoPaw-flash-4B-Q8_0",
-                    name="CoPaw-flash-4B-Q8_0",
+                    id="AgentScope/CoPaw-Flash-4B-Q8_0",
+                    name="CoPaw-Flash-4B-Q8_0",
                     size_bytes=5157833056,
-                ),
-                LocalModelInfo(
-                    id="Qwen/Qwen3-0.6B-GGUF",
-                    name="Qwen3-0.6B-GGUF",
-                    size_bytes=639446688,
                     source=DownloadSource.MODELSCOPE,
                 ),
             ]
         else:
             models = [
                 LocalModelInfo(
-                    id="AgentScope/CoPaw-flash-9B-Q4_K_M",
-                    name="CoPaw-flash-9B-Q4_K_M",
+                    id="AgentScope/CoPaw-Flash-9B-Q4_K_M",
+                    name="CoPaw-Flash-9B-Q4_K_M",
                     size_bytes=5476080128,
+                    source=DownloadSource.MODELSCOPE,
                 ),
                 LocalModelInfo(
-                    id="AgentScope/CoPaw-flash-9B-Q8_0",
-                    name="CoPaw-flash-9B-Q8_0",
+                    id="AgentScope/CoPaw-Flash-9B-Q8_0",
+                    name="CoPaw-Flash-9B-Q8_0",
                     size_bytes=10590617600,
-                ),
-                LocalModelInfo(
-                    id="Qwen/Qwen3-0.6B-GGUF",
-                    name="Qwen3-0.6B-GGUF",
-                    size_bytes=639446688,
                     source=DownloadSource.MODELSCOPE,
                 ),
             ]
@@ -254,7 +242,7 @@ class ModelManager:
             active = self._is_download_active()
             if not active:
                 return
-            self._progress.mark_cancelled()
+            self._progress.mark_canceling()
 
         if process is not None and process.is_alive():
             process.terminate()
@@ -277,6 +265,8 @@ class ModelManager:
         with self._lock:
             self._clear_download_state()
 
+        self._progress.mark_cancelled()
+
     def _is_download_active(self) -> bool:
         """Return whether a download process is still active."""
         return self._process is not None and self._process.is_alive()
@@ -291,7 +281,10 @@ class ModelManager:
                 final_dir = self._final_dir
                 status = self._progress.get_status()
 
-            if status == DownloadTaskStatus.CANCELLED:
+            if status in {
+                DownloadTaskStatus.CANCELING,
+                DownloadTaskStatus.CANCELLED,
+            }:
                 return
 
             if staging_dir is not None:
@@ -647,6 +640,8 @@ class ModelManager:
         for entry in entries:
             if not entry.is_dir():
                 continue
+            if self._is_temporary_download_dir(entry):
+                continue
             if not any(entry.rglob("*.gguf")):
                 continue
             if not self._looks_like_model_root(entry):
@@ -659,6 +654,13 @@ class ModelManager:
                 continue
             selected.append(candidate)
         return selected
+
+    def _is_temporary_download_dir(self, path: Path) -> bool:
+        relative_parts = path.relative_to(self._model_dir).parts
+        return any(
+            part.startswith(".") or part.endswith(".downloading")
+            for part in relative_parts
+        )
 
     def _looks_like_model_root(self, path: Path) -> bool:
         visible_children = [
