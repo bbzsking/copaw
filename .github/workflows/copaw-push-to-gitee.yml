@@ -2,7 +2,7 @@ name: copaw-push-to-gitee
 
 on:
   schedule:
-    - cron: '1 * * * *'      # 每小时触发一次（可根据需要调整）
+    - cron: '51 * * * *'      # 每小时触发一次（可根据需要调整）
   workflow_dispatch:          # 允许手动触发
 
 permissions:
