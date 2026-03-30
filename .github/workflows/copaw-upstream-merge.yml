@@ -1,4 +1,4 @@
-name: copaw-upstream-to-gitee
+name: copaw-upstream-merge
 
 on:
   schedule:
