@@ -1,33 +1,33 @@
 name: copaw-upstream-to-gitee
 
 on:
-  # 每一小时检查一次上游更新
   schedule:
     - cron: '1 * * * *'
-  # 允许手动触发
   workflow_dispatch:
-# 添加权限配置
+
 permissions:
-  contents: write  # 允许写入仓库内容
+  contents: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1. 检出你的 GitHub 仓库（目标仓库）
+      - name: Configure Git Identity
+        run: |
+          git config --global user.email "zhangbinbinhi@outlook.com"
+          git config --global user.name "bbzsking"
+
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 需要完整历史用于合并
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. 添加上游仓库并拉取最新 main
       - name: Sync from upstream
         run: |
-          git remote add upstream https://github.com/agentscope-ai/CoPaw.git
+          git remote add upstream https://github.com/agentscope-ai/CoPaw.git 
           git fetch upstream main
           
-          # 检查是否有更新
           LOCAL_COMMIT=$(git rev-parse HEAD)
           UPSTREAM_COMMIT=$(git rev-parse upstream/main)
           
@@ -38,25 +38,17 @@ jobs:
           
           echo "Upstream has new commits: $UPSTREAM_COMMIT"
           
-          # 合并上游更新（使用 --ff-only 避免产生合并提交，保持线性历史）
+          # 直接 --no-ff 合并，无论是否能快进都创建合并提交
           git checkout main
-          git merge --ff-only upstream/main || {
-            echo "Fast-forward failed, trying regular merge..."
-            git merge upstream/main --no-edit
-          }
+          git merge upstream/main --no-ff --no-edit -m "sync: merge upstream $(date +%Y-%m-%d)"
           
-          # 推送到本仓库的 main 分支
           git push origin main
           echo "Synced to GitHub main branch"
 
-      # 3. 推送到 Gitee 下游仓库
       - name: Push to Gitee
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
-          # 配置 Gitee 远程仓库（使用私人令牌）
           git remote add gitee https://oauth2:${GITEE_TOKEN}@gitee.com/elvesking/firmware-agent.git
-          
-          # 强制推送 main 分支到 Gitee（确保一致）
           git push -f gitee main:main
           echo "Pushed to Gitee main branch"
