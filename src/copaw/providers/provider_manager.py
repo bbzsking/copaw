@@ -547,6 +547,8 @@ PROVIDER_MINIMAX = AnthropicProvider(
     models=MINIMAX_MODELS,
     chat_model="AnthropicChatModel",
     freeze_url=True,
+    # This provider doesn't support connection check without model config
+    support_connection_check=False,
 )
 
 PROVIDER_MINIMAX_CN = AnthropicProvider(
