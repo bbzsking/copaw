@@ -14,7 +14,10 @@ from agentscope.message import Msg, TextBlock
 from agentscope.pipeline import stream_printing_messages
 from agentscope_runtime.engine.runner import Runner
 from agentscope_runtime.engine.schemas.agent_schemas import AgentRequest
-from agentscope_runtime.engine.schemas.exception import AgentException
+from agentscope_runtime.engine.schemas.exception import (
+    AgentException,
+    AppBaseException,
+)
 from dotenv import load_dotenv
 
 from .command_dispatch import (
@@ -27,6 +30,7 @@ from .session import SafeJSONSession
 from .utils import build_env_context
 from ..channels.schema import DEFAULT_CHANNEL
 from ...agents.react_agent import CoPawAgent
+from ...exceptions import convert_model_exception
 from ...agents.utils.file_handling import (
     read_text_file_with_encoding_fallback,
 )
@@ -539,27 +543,42 @@ class AgentRunner(Runner):
             if agent is not None:
                 await agent.interrupt()
             raise AgentException("Task has been cancelled!") from exc
+        except AppBaseException:
+            raise
         except Exception as e:
+            model_name = None
+            if agent and hasattr(agent, "model"):
+                model_name = getattr(agent.model, "model_name", None)
+
+            converted = convert_model_exception(e, model_name)
+
+            # Preserve all original error dump logic
             debug_dump_path = write_query_error_dump(
                 request=request,
-                exc=e,
+                exc=converted,
                 locals_=locals(),
             )
             path_hint = (
                 f"\n(Details:  {debug_dump_path})" if debug_dump_path else ""
             )
-            logger.exception(f"Error in query handler: {e}{path_hint}")
+            logger.exception(f"Error in query handler: {converted}{path_hint}")
             if debug_dump_path:
-                setattr(e, "debug_dump_path", debug_dump_path)
-                if hasattr(e, "add_note"):
-                    e.add_note(
+                setattr(converted, "debug_dump_path", debug_dump_path)
+                if hasattr(converted, "add_note"):
+                    converted.add_note(
                         f"(Details:  {debug_dump_path})",
                     )
                 suffix = f"\n(Details:  {debug_dump_path})"
-                e.args = (
-                    (f"{e.args[0]}{suffix}" if e.args else suffix.strip()),
-                ) + e.args[1:]
-            raise
+                if hasattr(converted, "message") and isinstance(
+                    converted.message,
+                    str,
+                ):
+                    converted.message += suffix
+                elif converted.args:
+                    converted.args = (
+                        f"{converted.args[0]}{suffix}",
+                    ) + converted.args[1:]
+            raise converted from e
         finally:
             if agent is not None and session_state_loaded:
                 await self.session.save_session_state(

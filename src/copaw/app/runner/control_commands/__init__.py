@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 
+from copaw.exceptions import SystemCommandException
 from .base import BaseControlCommandHandler, ControlContext
 from .model_handler import ModelCommandHandler
 from .skills_handler import SkillsCommandHandler
