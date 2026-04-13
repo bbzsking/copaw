@@ -28,10 +28,11 @@ jobs:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
           # 添加 Gitee 远程仓库（使用 OAuth2 认证）
-          git remote add gitee https://oauth2:${GITEE_TOKEN}@gitee.com/elvesking/firmware-agent.git
+          #git remote add gitee https://oauth2:${GITEE_TOKEN}@gitee.com/elvesking/firmware-agent.git
           
           # 推送 main 分支到 Gitee 的 main 分支
           # 注意：如果 Gitee 仓库已经存在并且你希望保留其历史，请移除 -f 选项
-          git push -f gitee main:main
-          
+          # 2026/4/12 copaw更名为qwenpaw，我们不再推送，仅仅使用copaw-v1.0.2版本：git clone --branch v1.0.2 --depth 1 https://github.com/agentscope-ai/QwenPaw.git
+          echo "will not push to gitee firmware"
+          # git push -f gitee main:main          
           echo "Successfully pushed to Gitee main branch"
