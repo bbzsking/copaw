@@ -254,6 +254,24 @@ OPENAI_MODELS: List[ModelInfo] = [
     ),
 ]
 
+OPENCODE_MODELS: List[ModelInfo] = [
+    # Free models from OpenCode Zen
+    ModelInfo(
+        id="big-pickle",
+        name="Big Pickle",
+        supports_image=False,
+        supports_video=False,
+        probe_source="documentation",
+    ),
+    ModelInfo(
+        id="nemotron-3-super-free",
+        name="Nemotron 3 Super Free",
+        supports_image=False,
+        supports_video=False,
+        probe_source="documentation",
+    ),
+]
+
 AZURE_OPENAI_MODELS: List[ModelInfo] = [
     ModelInfo(
         id="gpt-5-chat",
@@ -543,6 +561,16 @@ PROVIDER_OPENAI = OpenAIProvider(
     freeze_url=True,
 )
 
+PROVIDER_OPENCODE = OpenAIProvider(
+    id="opencode",
+    name="OpenCode",
+    base_url="https://opencode.ai/zen/v1",
+    api_key_prefix="",
+    models=OPENCODE_MODELS,
+    freeze_url=True,
+    support_model_discovery=True,
+)
+
 PROVIDER_AZURE_OPENAI = OpenAIProvider(
     id="azure-openai",
     name="Azure OpenAI",
@@ -725,6 +753,7 @@ class ProviderManager:  # pylint: disable=too-many-public-methods
         self._add_builtin(PROVIDER_DASHSCOPE)
         self._add_builtin(PROVIDER_ALIYUN_CODINGPLAN)
         self._add_builtin(PROVIDER_OPENAI)
+        self._add_builtin(PROVIDER_OPENCODE)
         self._add_builtin(PROVIDER_AZURE_OPENAI)
         self._add_builtin(PROVIDER_ANTHROPIC)
         self._add_builtin(PROVIDER_GEMINI)
