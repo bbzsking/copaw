@@ -105,6 +105,7 @@ class WecomChannel(BaseChannel):
         bot_prefix: str = "",
         media_dir: str = "",
         welcome_text: str = "",
+        workspace_dir: Path | None = None,
         on_reply_sent: OnReplySent = None,
         show_tool_details: bool = True,
         filter_tool_messages: bool = False,
@@ -131,9 +132,16 @@ class WecomChannel(BaseChannel):
         self.secret = secret
         self.bot_prefix = bot_prefix
         self.welcome_text = welcome_text
-        self._media_dir = (
-            Path(media_dir).expanduser() if media_dir else DEFAULT_MEDIA_DIR
+        self._workspace_dir = (
+            Path(workspace_dir).expanduser() if workspace_dir else None
         )
+        # Use workspace-specific media dir if workspace_dir is provided
+        if not media_dir and self._workspace_dir:
+            self._media_dir = self._workspace_dir / "media"
+        elif media_dir:
+            self._media_dir = Path(media_dir).expanduser()
+        else:
+            self._media_dir = DEFAULT_MEDIA_DIR
         self._max_reconnect_attempts = max_reconnect_attempts
 
         self._client: Any = None
@@ -187,6 +195,7 @@ class WecomChannel(BaseChannel):
         show_tool_details: bool = True,
         filter_tool_messages: bool = False,
         filter_thinking: bool = False,
+        workspace_dir: Path | None = None,
     ) -> "WecomChannel":
         return cls(
             process=process,
@@ -196,6 +205,7 @@ class WecomChannel(BaseChannel):
             bot_prefix=getattr(config, "bot_prefix", "") or "",
             media_dir=getattr(config, "media_dir", None) or "",
             welcome_text=getattr(config, "welcome_text", "") or "",
+            workspace_dir=workspace_dir,
             on_reply_sent=on_reply_sent,
             show_tool_details=show_tool_details,
             filter_tool_messages=filter_tool_messages,
@@ -414,6 +424,7 @@ class WecomChannel(BaseChannel):
                             FileContent(
                                 type=ContentType.FILE,
                                 file_url=path,
+                                filename=filename,
                             ),
                         )
                     else:
@@ -471,6 +482,29 @@ class WecomChannel(BaseChannel):
                                 )
                             else:
                                 text_parts.append("[image: download failed]")
+                    elif itype == "file":
+                        file_info = item.get("file") or {}
+                        url = file_info.get("url") or ""
+                        aes_key = file_info.get("aeskey") or ""
+                        filename = file_info.get("filename") or "file.bin"
+                        if url:
+                            path = await self._download_media(
+                                url,
+                                aes_key=aes_key,
+                                filename_hint=filename,
+                            )
+                            if path:
+                                content_parts.append(
+                                    FileContent(
+                                        type=ContentType.FILE,
+                                        file_url=path,
+                                        filename=filename,
+                                    ),
+                                )
+                            else:
+                                text_parts.append("[file: download failed]")
+                        else:
+                            text_parts.append("[file: no url]")
             else:
                 text_parts.append(f"[{msgtype}]")
 
