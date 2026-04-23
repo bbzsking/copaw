@@ -122,7 +122,6 @@
   "voiceTranscription": {
     "title": "Voice Transcription",
     "description": "Configure how incoming audio and voice messages are handled.",
-    "loadFailed": "Failed to load audio mode settings",
     "saveSuccess": "Audio mode saved",
     "saveFailed": "Failed to save audio mode",
     "audioModeLabel": "Audio Mode",
@@ -1277,6 +1276,8 @@
     "maxItersMin": "Max iterations must be at least 1",
     "autoContinueOnTextOnly": "Auto-continue on text-only step",
     "autoContinueOnTextOnlyTooltip": "If the model ends a reasoning step with only text (no tool calls), inject a hint and run one extra reasoning pass with the same tool policy so multi-step tasks are less likely to stop silently. Turn off to match legacy behavior. May increase token usage when enabled.",
+    "planMode": "Plan Mode",
+    "planModeTooltip": "Enable plan mode to use /plan <description> for structured task planning. When enabled, plan tools are registered and the plan panel becomes available.",
     "maxInputLength": "Max Input Length",
     "maxInputLengthTooltip": "Maximum input length (tokens) for the model context window",
     "maxInputLengthPlaceholder": "Enter max input length",
@@ -1399,6 +1400,20 @@
     "embeddingMaxBatchSizeTooltip": "Maximum number of items in a single batch embedding request",
     "embeddingMaxBatchSizeRequired": "Max batch size is required",
     "embeddingRestartWarning": "Embedding model config does not support hot reload. Save and restart the service for changes to take effect.",
+    "toolExecutionLevel": {
+      "title": "Tool Execution Security",
+      "alertMessage": "Configure tool call approval policy to control the security level when agents execute tools",
+      "strict": "Strict Mode",
+      "strictDesc": "All tool calls require approval, highest security level",
+      "smart": "Smart Mode",
+      "smartDesc": "Low-risk tools auto-approved, medium+ risk tools require approval",
+      "auto": "Auto Mode",
+      "autoDesc": "Only tools explicitly marked for approval require approval (default)",
+      "off": "Off Mode",
+      "offDesc": "Disable all tool approvals, all tools execute automatically"
+    },
+    "saveLevelSuccess": "Tool execution security level saved",
+    "saveLevelFailed": "Failed to save tool execution security level",
     "maxContextLength": "Max Context Length",
     "maxContextLengthTooltip": "Maximum token count for the model context window, determining how much history fits in each request",
     "maxContextLengthRequired": "Max context length is required",
@@ -1511,6 +1526,9 @@
       },
       "skills": {
         "description": "List chat-available skills and expose explicit skill commands"
+      },
+      "plan": {
+        "description": "Create a structured plan to decompose the task into subtasks"
       }
     },
     "attachments": {
@@ -1714,5 +1732,34 @@
     "nothingToUpdate": "Please enter a new username or password",
     "passwordEmpty": "Password cannot be blank",
     "usernameEmpty": "Username cannot be blank"
+  },
+  "approval": {
+    "title": "Security Approval Required",
+    "tool": "Tool",
+    "severity": "Severity",
+    "findings": "Findings",
+    "parameters": "Parameters",
+    "approve": "Approve",
+    "deny": "Deny",
+    "source": "Source",
+    "subSession": "Sub-Agent",
+    "approved": "Tool call approved",
+    "denied": "Tool call denied",
+    "approveFailed": "Failed to approve",
+    "cancelTask": "Cancel Task",
+    "denyFailed": "Failed to deny"
+  },
+  "plan": {
+    "title": "Plan",
+    "noPlan": "No active plan",
+    "noPlanHint": "Use /plan <description> to create a plan",
+    "progress": "Progress",
+    "outcome": "Outcome",
+    "state": {
+      "todo": "Todo",
+      "in_progress": "In Progress",
+      "done": "Done",
+      "abandoned": "Abandoned"
+    }
   }
 }
