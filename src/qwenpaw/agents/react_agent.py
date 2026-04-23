@@ -5,6 +5,8 @@ This module provides the main QwenPawAgent class built on ReActAgent,
 with integrated tools, skills, and memory management.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import os
@@ -61,10 +63,10 @@ from ..constant import (
     MEDIA_UNSUPPORTED_PLACEHOLDER,
     WORKING_DIR,
 )
-from ..agents.memory import BaseMemoryManager
-from ..agents.context import BaseContextManager
 
 if TYPE_CHECKING:
+    from ..agents.memory import BaseMemoryManager
+    from ..agents.context import BaseContextManager
     from ..config.config import AgentProfileConfig
     from .context import AgentContext
 
