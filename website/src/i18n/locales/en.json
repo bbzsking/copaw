@@ -261,6 +261,7 @@
     "mcp": "MCP & Built-in Tools",
     "acpServer": "ACP Integration",
     "memory": "Memory",
+    "memoryEvolvingAndProactive": "Memory-Evolving & Proactive",
     "context": "Context",
     "commands": "Magic commands",
     "heartbeat": "Heartbeat",
